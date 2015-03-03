@@ -1,18 +1,93 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>My Sample Project</title>
+        <title>React Data Table</title>
         <link href="css/fixed-data-table.css" rel="stylesheet" />
+        <link href="css/react-data-table.css" rel="stylesheet" />
+        <link href="css/font-awesome.min.css" rel="stylesheet" />
         <script type="text/javascript" src="js/es6-shim.js"></script>
         <script data-main="js/main" src="js/require.js"></script>
     </head>
     <body>
-        <h1>My Sample Project</h1>
-        <p>Filter results for name, city, country and email. Click on any column header to sort the result.</p>
+        <h1>React Data Table</h1>
         <div id="container"></div>
 
         <script>
-        	requirejs(['app/fixed-data-table-app']);
+            requirejs(['react', 'app/react-data-table', 'data', 'underscore'], 
+                function(React, ReactDataTable, FakeData, _) {
+                
+                var data = _.map(FakeData, function(row) {
+                    return _.tap(row, function(obj) {
+                        return obj.selected = false;
+                    });
+                });
+
+                var columns = [
+                    {
+                        align: "center",
+                        width: 10,
+                        flexGrow: 0.3,
+                        dataKey: "selected",
+                        headerRenderer: function() {
+                            return React.createElement("input", {
+                                type: "checkbox", 
+                                name: "checkbox", 
+                                onClick: function(event) {
+                                    var check = event.target.checked;
+                                    var rows = this.state.data.slice();
+                                    var newState = _.map(rows, function(row) {
+                                        row.selected = check;
+                                    });
+                                    this.setState({
+                                        data: rows
+                                    });
+                                }.bind(this)
+                            });
+                        },
+                        cellRenderer: function(cellData, cellDataKey, rowData, index) {
+                            return React.createElement("input", {
+                                type: "checkbox",
+                                className: "checkbox",
+                                checked: cellData,
+                                onChange: function(event) {
+                                    var rows = this.state.data.slice();
+                                    var row = rows[index];
+                                    rows[index] = Object.assign({}, row, {selected: event.target.checked});
+                                    this.setState({ data: rows });
+                                }.bind(this)
+                            });
+                        }
+                    },
+                    {
+                        label: "Name label", 
+                        dataKey: "name", 
+                        align: "center", 
+                        sortable: true
+                    },
+                    {
+                        label: "Email label", 
+                        dataKey: "email"
+                    },
+                    {
+                        label: "Country label", 
+                        dataKey: "country", 
+                        sortable: true, 
+                        sort: function(a,b) {
+                            return b.length - a.length;
+                        }
+                    }
+                ];
+
+
+                React.render(React.createElement(ReactDataTable, {
+                    columns: columns, 
+                    data: data,
+                    maxHeight: screen.height - 250,
+                    width: screen.width - 100,
+                    rowHeight: 40,
+                    headerHeight: 40
+                }), document.getElementById('container'));
+            });
         </script>
     </body>
 </html>

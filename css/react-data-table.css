@@ -1,0 +1,28 @@
+.react-data-table-sort-desc, .react-data-table-sort-asc {
+	color: #eb8c00;
+}
+
+.react-data-table-sortable-column, 
+.react-data-table-sort, 
+.react-data-table-sort-desc, 
+.react-data-table-sort-asc {
+	cursor: pointer;
+}
+
+.react-data-table-filter {
+	float: right;
+}
+
+.react-data-table-header {
+	margin: 0 10px 10px 12px;
+}
+
+.react-data-table {
+	margin: 0 20px;
+	padding: 10px;
+	background: #f2f2f2;
+}
+
+.react-data-table-grid {
+	margin: 0 auto;
+}
