@@ -5,6 +5,20 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
 
 
   var ReactDataTable = React.createClass({displayName: 'ReactDataTable',
+    propTypes: {
+      columns: React.PropTypes.array.isRequired,
+      data: React.PropTypes.array.isRequired,
+      widthMargin: React.PropTypes.number,
+      heightMargin: React.PropTypes.number,
+      width: React.PropTypes.number.isRequired,
+      height: React.PropTypes.number.isRequired
+    },
+    getDefaultProps: function() {
+      return {
+        widthMargin: 0,
+        heightMargin: 0
+      };
+    },
     getInitialState: function() {
       return {
         fuse: new Fuse(this.props.data, {
@@ -12,8 +26,19 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
           keys: _.pluck(this.props.columns, "dataKey")
         }),
         query: null,
-        data: this.props.data
+        data: this.props.data,
+        width: this.props.width,
+        height: this.props.height
       };
+    },
+    componentDidMount: function() {
+      window.addEventListener("resize", this.handleResize);
+    },
+    handleResize: function() {
+      this.setState({
+        width: window.innerWidth - this.props.widthMargin,
+        height: window.innerHeight - this.props.heightMargin
+      });
     },
     filter: function(value) {
       var result = value != "" ? this.state.fuse.search(value) : this.props.data;
@@ -35,7 +60,7 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
       }, this);
     },
   	render: function() {
-      var $__0=        this.props,columns=$__0.columns,data=$__0.data,showInfo=$__0.showInfo,info=$__0.info,other=(function(source, exclusion) {var rest = {};var hasOwn = Object.prototype.hasOwnProperty;if (source == null) {throw new TypeError();}for (var key in source) {if (hasOwn.call(source, key) && !hasOwn.call(exclusion, key)) {rest[key] = source[key];}}return rest;})($__0,{columns:1,data:1,showInfo:1,info:1});
+      var $__0=          this.props,columns=$__0.columns,data=$__0.data,showInfo=$__0.showInfo,info=$__0.info,width=$__0.width,height=$__0.height,other=(function(source, exclusion) {var rest = {};var hasOwn = Object.prototype.hasOwnProperty;if (source == null) {throw new TypeError();}for (var key in source) {if (hasOwn.call(source, key) && !hasOwn.call(exclusion, key)) {rest[key] = source[key];}}return rest;})($__0,{columns:1,data:1,showInfo:1,info:1,width:1,height:1});
       var columnsWithBindedRenderers = this.bindRenderersContext();
 
   		return (
@@ -44,7 +69,11 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
     				React.createElement(ReactDataTable.Info, {showInfo: this.props.showInfo, info: this.props.info, recordsCount: this.state.data.length}), 
             React.createElement(ReactDataTable.Filter, {showFilter: this.props.showFilter, onChange: this.filter})
           ), 
-  				React.createElement(ReactDataTable.Grid, React.__spread({columns: columnsWithBindedRenderers, data: this.state.data},  other))
+  				React.createElement(ReactDataTable.Grid, React.__spread({columns: columnsWithBindedRenderers, 
+  				  data: this.state.data, 
+  				  width: this.state.width, 
+  				  height: this.state.height}, 
+  				  other))
   			)
   		);
   	}
