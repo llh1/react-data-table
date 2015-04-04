@@ -12,7 +12,11 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
       widthMargin: React.PropTypes.number,
       heightMargin: React.PropTypes.number,
       width: React.PropTypes.number.isRequired,
-      height: React.PropTypes.number.isRequired
+      height: React.PropTypes.number.isRequired,
+      showInfo: React.PropTypes.bool,
+      showFilter: React.PropTypes.bool,
+      showPrint: React.PropTypes.bool,
+      onPrint: React.PropTypes.func
     },
     getDefaultProps: function() {
       return {
@@ -75,6 +79,7 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
   			React.createElement("div", {className: "react-data-table"}, 
           React.createElement("div", {className: "react-data-table-header"}, 
     				React.createElement(ReactDataTable.Info, {showInfo: this.props.showInfo, info: this.props.info, recordsCount: this.state.data.length}), 
+    				React.createElement(ReactDataTable.Print, {showPrint: this.props.showPrint, onPrint: this.props.onPrint, data: this.state.data}), 
             React.createElement(ReactDataTable.Filter, {showFilter: this.props.showFilter, onChange: this.filter})
           ), 
   				React.createElement(ReactDataTable.Grid, React.__spread({columns: columnsWithBindedRenderers, 
@@ -85,6 +90,34 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
   			)
   		);
   	}
+  });
+
+
+  ReactDataTable.Print = React.createClass({displayName: 'Print',
+    propTypes: {
+      showPrint: React.PropTypes.bool,
+      data: React.PropTypes.array.isRequired,
+      onPrint: React.PropTypes.func
+    },
+    getDefaultProps: function() {
+      return {
+        showPrint: true
+      }
+    },
+    onClick: function() {
+      this.props.onPrint(this.props.data);
+    },
+    render: function() {
+      if(!this.props.showPrint) {
+        return React.createElement("span", null);
+      } 
+
+      return (
+        React.createElement("span", {className: "react-data-table-print"}, 
+          React.createElement("a", {href: "#", onClick: this.onClick}, "Print")
+        )
+      )
+    }
   });
 
 

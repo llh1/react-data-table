@@ -12,7 +12,11 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
       widthMargin: React.PropTypes.number,
       heightMargin: React.PropTypes.number,
       width: React.PropTypes.number.isRequired,
-      height: React.PropTypes.number.isRequired
+      height: React.PropTypes.number.isRequired,
+      showInfo: React.PropTypes.bool,
+      showFilter: React.PropTypes.bool,
+      showPrint: React.PropTypes.bool,
+      onPrint: React.PropTypes.func
     },
     getDefaultProps: function() {
       return {
@@ -75,6 +79,7 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
   			<div className="react-data-table">
           <div className="react-data-table-header">
     				<ReactDataTable.Info showInfo={this.props.showInfo} info={this.props.info} recordsCount={this.state.data.length} />
+    				<ReactDataTable.Print showPrint={this.props.showPrint} onPrint={this.props.onPrint} data={this.state.data} />
             <ReactDataTable.Filter showFilter={this.props.showFilter} onChange={this.filter} />
           </div>
   				<ReactDataTable.Grid columns={columnsWithBindedRenderers} 
@@ -85,6 +90,34 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
   			</div>
   		);
   	}
+  });
+
+
+  ReactDataTable.Print = React.createClass({
+    propTypes: {
+      showPrint: React.PropTypes.bool,
+      data: React.PropTypes.array.isRequired,
+      onPrint: React.PropTypes.func
+    },
+    getDefaultProps: function() {
+      return {
+        showPrint: true
+      }
+    },
+    onClick: function() {
+      this.props.onPrint(this.props.data);
+    },
+    render: function() {
+      if(!this.props.showPrint) {
+        return <span />;
+      } 
+
+      return (
+        <span className="react-data-table-print">
+          <a href="#" onClick={this.onClick}>Print</a>
+        </span>
+      )
+    }
   });
 
 

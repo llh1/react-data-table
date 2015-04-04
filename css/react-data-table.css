@@ -13,6 +13,12 @@
 	float: right;
 }
 
+.react-data-table-print {
+  position: relative;
+  margin-left: 20px;
+  cursor: pointer;
+}
+
 .react-data-table-header {
 	margin: 0 10px 10px 12px;
 }

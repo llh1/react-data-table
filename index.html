@@ -13,8 +13,8 @@
         <div id="container"></div>
 
         <script>
-            requirejs(['react', 'app/react-data-table', 'data', 'underscore'], 
-                function(React, ReactDataTable, FakeData, _) {
+            requirejs(['react', 'app/react-data-table', 'app/printer', 'data', 'underscore'], 
+                function(React, ReactDataTable, Printer, FakeData, _) {
                 
                 var data = _.map(FakeData, function(row) {
                     return _.tap(row, function(obj) {
@@ -81,17 +81,34 @@
                     }
                 ];
 
+                var print = function(data) {
+                  var content = React.renderToStaticMarkup(React.createElement(Printer, {
+                    columns: [
+                      {label: "Name", dataKey: "name"}, 
+                      {label: "Email", dataKey: "email"}, 
+                      {label: "Country", dataKey: "country"}
+                    ],
+                    data: data
+                  }));
+
+                  var printPopup = window.open('', '', 'width=800, height=600'); 
+                  printPopup.document.write(content);
+                  printPopup.document.close();
+                  printPopup.focus();
+                  printPopup.print();
+                };
 
                 React.render(React.createElement(ReactDataTable, {
                     columns: columns, 
                     data: data,
                     searchKeys: ["name", "country"],
-                    height: window.innerHeight - 250,
+                    height: window.innerHeight - 150,
                     width: window.innerWidth - 100,
                     widthMargin: 100,
                     heightMargin: 150,
                     rowHeight: 40,
-                    headerHeight: 40
+                    headerHeight: 40,
+                    onPrint: print 
                 }), document.getElementById('container'));
             });
         </script>
