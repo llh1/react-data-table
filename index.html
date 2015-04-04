@@ -62,7 +62,10 @@
                         label: "Name label", 
                         dataKey: "name", 
                         align: "center", 
-                        sortable: true
+                        sortable: true,
+                        sortPattern: function(row) {
+                          return _.escape(row.name);
+                        }
                     },
                     {
                         label: "Email label", 
@@ -82,8 +85,9 @@
                 React.render(React.createElement(ReactDataTable, {
                     columns: columns, 
                     data: data,
-                    maxHeight: screen.height - 250,
-                    width: screen.width - 100,
+                    searchKeys: ["name", "country"],
+                    height: window.innerHeight - 250,
+                    width: window.innerWidth - 100,
                     widthMargin: 100,
                     heightMargin: 150,
                     rowHeight: 40,

@@ -8,6 +8,7 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
     propTypes: {
       columns: React.PropTypes.array.isRequired,
       data: React.PropTypes.array.isRequired,
+      searchKeys: React.PropTypes.array,
       widthMargin: React.PropTypes.number,
       heightMargin: React.PropTypes.number,
       width: React.PropTypes.number.isRequired,
@@ -16,23 +17,34 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
     getDefaultProps: function() {
       return {
         widthMargin: 0,
-        heightMargin: 0
+        heightMargin: 0,
+        searchKeys: []
       };
     },
     getInitialState: function() {
       return {
-        fuse: new Fuse(this.props.data, {
-          threshold: 0,
-          keys: _.pluck(this.props.columns, "dataKey")
-        }),
-        query: null,
         data: this.props.data,
+        fuse: this.getFuseInstance(this.props.data),
         width: this.props.width,
         height: this.props.height
       };
     },
     componentDidMount: function() {
       window.addEventListener("resize", this.handleResize);
+    },
+    componentWillReceiveProps: function(newProps) {
+      if(newProps.data.length != this.props.data.length) {
+        this.setState({
+          data: newProps.data,
+          fuse: this.getFuseInstance(newProps.data) 
+        });
+      } 
+    },
+    getFuseInstance: function(fuseData) {
+      return new Fuse(fuseData, {
+        threshold: 0,
+        keys: this.props.searchKeys
+      });
     },
     handleResize: function() {
       this.setState({
@@ -42,11 +54,7 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
     },
     filter: function(value) {
       var result = value != "" ? this.state.fuse.search(value) : this.props.data;
-
-      this.setState({
-        query: value,
-        data: result
-      });
+      this.setState({ data: result });
     },
     bindRenderersContext: function() {
       return _.map(this.props.columns, function(prop) {
@@ -150,28 +158,30 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
     },
     getSortableColumn: function(columnProps) {
       var gridContext = this;
-      var sortIconClassname = this.getSortableColumnIcon(this.state.sortBy[columnProps.dataKey]);
+      var sortIconClassname = this.getSortableColumnIcon(this.state.sortBy[columnProps.label]);
 
       return function() {
         return (
-          <div className="react-data-table-sortable-column" onClick={gridContext.sortBy.bind(gridContext, columnProps.dataKey)}>
+          <div className="react-data-table-sortable-column" onClick={gridContext.sortBy.bind(gridContext, columnProps.dataKey, columnProps.label)}>
             <i className={sortIconClassname}></i> {columnProps.label}
           </div>
         );
       };
     },
-    sortBy: function(key, event) {
-      var columnSortedBy = this.state.sortBy[key] && this.state.sortBy[key] === "desc" ? "asc" : "desc",
+    sortBy: function(key, label) {
+      var columnSortedBy = this.state.sortBy[label] && this.state.sortBy[label] === "desc" ? "asc" : "desc",
           columnProps = _.find(this.props.columns, function(column) {
-            return column.dataKey === key;
+            return column.label === label;
           }),
           sortFunction = columnProps.sort ? columnProps.sort : this.compare;
 
       this.setState({
         rows: this.props.data.sort(function(a,b) {
-          return columnSortedBy === "desc" ? sortFunction(b[key], a[key]) : sortFunction(a[key], b[key]);
+          var leftOperand = columnProps.sortPattern ? columnProps.sortPattern(a) : a[key];
+          var rightOperand = columnProps.sortPattern ? columnProps.sortPattern(b) : b[key];
+          return columnSortedBy === "desc" ? sortFunction(leftOperand, rightOperand) : sortFunction(rightOperand, leftOperand);
         }),
-        sortBy: _.tap([], function(object) { object[key] = columnSortedBy })
+        sortBy: _.tap([], function(object) { object[label] = columnSortedBy })
       });
     },
     compare: function(a, b) {
@@ -183,7 +193,7 @@ define(["react", "fixedDataTable", "fuse", "underscore"], function(React, FixedD
           <FixedDataTable.Table rowsCount={this.props.data.length} rowGetter={this.getRow} {...this.props}>
             {this.props.columns.map(function(columnProps) {
                 var { cellRenderer, headerRenderer, ...otherColumnProps } = columnProps;
-                return <FixedDataTable.Column key={columnProps.dataKey} 
+                return <FixedDataTable.Column key={columnProps.dataKey}
                                               width={columnProps.width || DEFAULT_COLUMN_WIDTH}
                                               flexGrow={columnProps.flexGrow || DEFAULT_COLUMN_FLEXGROW}
                                               headerRenderer={columnProps.sortable ? this.getSortableColumn(columnProps) : columnProps.headerRenderer}
